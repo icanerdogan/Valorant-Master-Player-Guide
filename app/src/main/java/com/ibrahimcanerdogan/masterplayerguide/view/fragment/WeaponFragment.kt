@@ -1,0 +1,160 @@
+package com.ibrahimcanerdogan.masterplayerguide.view.fragment
+
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
+import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.ibrahimcanerdogan.masterplayerguide.data.model.weapon.WeaponData
+import com.ibrahimcanerdogan.masterplayerguide.util.Resource
+import com.ibrahimcanerdogan.masterplayerguide.view.adapter.weapon.WeaponAdapter
+import com.ibrahimcanerdogan.masterplayerguide.view.viewmodel.weapon.WeaponViewModel
+import com.ibrahimcanerdogan.masterplayerguide.view.viewmodel.weapon.WeaponViewModelFactory
+import com.ibrahimcanerdogan.masterplayerguide.R
+import com.ibrahimcanerdogan.masterplayerguide.databinding.FragmentWeaponBinding
+import dagger.hilt.android.AndroidEntryPoint
+import net.cachapa.expandablelayout.ExpandableLayout
+import javax.inject.Inject
+
+
+@AndroidEntryPoint
+class WeaponFragment : Fragment() {
+
+    private var _binding: FragmentWeaponBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel by lazy {
+        ViewModelProvider(this, factory).get(WeaponViewModel::class.java)
+    }
+
+    @Inject
+    lateinit var factory: WeaponViewModelFactory
+    @Inject
+    lateinit var weaponAdapter: WeaponAdapter
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentWeaponBinding.inflate(inflater, container, false)
+        // java.lang.IllegalStateException: Cannot change whether this adapter has stable IDs while the adapter has registered observers.
+        if (!weaponAdapter.hasObservers()) {
+            weaponAdapter.setHasStableIds(true)
+        }
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.apply {
+            // Heavy Weapon
+            setWeaponDataUI("Heavy", linearLayoutHeavyTitle, recyclerViewHeavy, expandableLayoutHeavy)
+            // Rifle Weapon
+            setWeaponDataUI("Rifle", linearLayoutRifleTitle, recyclerViewRifle, expandableLayoutRifle)
+            // Sniper Weapon
+            setWeaponDataUI("Sniper", linearLayoutSniperTitle, recyclerViewSniper, expandableLayoutSniper)
+            // Shotgun Weapon
+            setWeaponDataUI("Shotgun", linearLayoutShotgunTitle, recyclerViewShotgun, expandableLayoutShotgun)
+            // SMG Weapon
+            setWeaponDataUI("SMG", linearLayoutSMGTitle, recyclerViewSMG, expandableLayoutSMG)
+            // SideArm Weapon
+            setWeaponDataUI("Sidearm", linearLayoutSidearmTitle, recyclerViewSidearm, expandableLayoutSidearm)
+            // Melee Weapon
+            setWeaponDataUI("Melee", linearLayoutMeleeTitle, recyclerViewMelee, expandableLayoutMelee)
+        }
+
+        weaponAdapter.onWeaponItemClick = {
+            val fragment = WeaponDetailFragment.newInstance(
+                weaponUUID = it
+            )
+            val fragmentManager = childFragmentManager
+            val fragmentTransaction = fragmentManager.beginTransaction()
+
+            fragmentTransaction.replace(R.id.frameLayoutWeapon, fragment)
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+        }
+    }
+    private fun setWeaponDataUI(
+        weaponCategory: String,
+        linearLayoutTitle: LinearLayout,
+        recyclerView: RecyclerView,
+        expandableLayout: ExpandableLayout
+    ) {
+        expandableLayout.setInterpolator(LinearInterpolator())
+
+        linearLayoutTitle.setOnClickListener {
+            viewModel.getAllWeaponData(weaponCategory)
+            viewModel.weaponListData.observe(viewLifecycleOwner, ::setLiveData)
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (!expandableLayout.isExpanded) {
+                    closeAllExpandableLayout()
+                    expandableLayout.isExpanded = true
+                } else {
+                    expandableLayout.isExpanded = false
+                    weaponAdapter.setData(listOf())
+                }
+            }, 200)
+        }
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(this.context)
+            adapter = weaponAdapter
+        }
+    }
+
+    private fun setLiveData(response: Resource<List<WeaponData>>) {
+        when (response) {
+            is Resource.Success -> {
+                setProgressBar(false)
+                response.data.let { listWeaponData ->
+                    listWeaponData?.let {
+                        weaponAdapter.setData(it)
+                        //Log.i("Weapon Success Data", it.toString())
+                    }
+
+                }
+            }
+            is Resource.Error -> {
+                setProgressBar(false)
+                response.message?.let { errorMessage ->
+                    Toast.makeText(activity, errorMessage, Toast.LENGTH_LONG).show()
+                    Log.e("Weapon Error Data", errorMessage)
+                }
+            }
+            is Resource.Loading -> {
+                setProgressBar(true)
+            }
+        }
+    }
+
+    private fun closeAllExpandableLayout() {
+        binding.apply {
+            expandableLayoutHeavy.isExpanded = false
+            expandableLayoutRifle.isExpanded = false
+            expandableLayoutSniper.isExpanded = false
+            expandableLayoutShotgun.isExpanded = false
+            expandableLayoutSMG.isExpanded = false
+            expandableLayoutSidearm.isExpanded = false
+            expandableLayoutMelee.isExpanded = false
+        }
+    }
+
+    private fun setProgressBar(isShown : Boolean) {
+        binding.progressIndicator.visibility = if (isShown) View.VISIBLE else View.GONE
+    }
+
+    override fun onResume() {
+        super.onResume()
+        requireActivity().findViewById<BottomNavigationView>(R.id.bottomNavigationView)?.visibility = View.VISIBLE
+    }
+}

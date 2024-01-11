@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_maps"
+        android:title="Maps"
+        android:icon="@drawable/icon_action_map"/>
+
+    <item
+        android:id="@+id/navigation_agent"
+        android:title="Agent"
+        android:icon="@drawable/icon_action_agent"/>
+
+    <item
+        android:id="@+id/navigation_weapon"
+        android:title="Weapon"
+        android:icon="@drawable/icon_action_weapon"/>
+
+<!--
+    <item
+        android:id="@+id/navigation_other"
+        android:title="Other"
+        android:icon="@drawable/icon_action_other"/>
+-->
+</menu>
