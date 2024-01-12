@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.ValorantProfessionalGuide.Splash" parent="Theme.SplashScreen">
+    <style name="Theme.ValorantMasterPlayerGuide.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/ValorantPinkRed</item>
         <item name="windowSplashScreenAnimationDuration">2000</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/icon_splash</item>
-        <item name="postSplashScreenTheme">@style/Theme.ValorantProfessionalGuide</item>
+        <item name="postSplashScreenTheme">@style/Theme.ValorantMasterPlayerGuide</item>
     </style>
 </resources>
