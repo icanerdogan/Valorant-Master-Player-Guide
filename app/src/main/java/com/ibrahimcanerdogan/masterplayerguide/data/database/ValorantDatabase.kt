@@ -12,7 +12,7 @@ import com.ibrahimcanerdogan.masterplayerguide.data.model.weapon.WeaponData
 
 @Database(
     entities = [AgentData::class, MapData::class, WeaponData::class],
-    version = 3,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
